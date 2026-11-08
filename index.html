@@ -290,7 +290,7 @@ const hasCash=(c,y)=>c.years[y]&&c.years[y].cfo!=null;
 
 /* =================== ESTADO =================== */
 const S={page:1,year:null,off:new Set(),sector:'Todos',ind1:'RC',ind2:'ROE',ser:new Set(['ven','un','pt']),charts:{}};
-const vis=()=>DB.companies.filter(c=>S.sector==='Todos'||c.sector===S.sector);
+const vis=()=>DB.companies.filter(c=>S.sector==='Todos'||sectors().length<2||c.sector===S.sector);
 const sel=()=>vis().filter(c=>!S.off.has(c.id));
 const focus=()=>sel()[0]||vis()[0]||DB.companies[0];
 const $=id=>document.getElementById(id);
@@ -319,10 +319,10 @@ function buildPane(){
   $('yrs').innerHTML=ys.map(y=>`<button class="yb ${y===S.year?'on':''}" data-y="${y}">${y}</button>`).join('');
   $('yrs').querySelectorAll('.yb').forEach(b=>b.onclick=()=>{S.year=+b.dataset.y;render()});
   const one=single();
-  $('sEmp').style.display=one?'none':'block';$('sSec').style.display='block';
+  $('sEmp').style.display='block';$('sSec').style.display='block';
   $('lstEmp').innerHTML=vis().map(c=>`<div class="it ${S.off.has(c.id)?'':'on'}" data-id="${c.id}"><i></i>${c.nombre}</div>`).join('');
-  $('lstEmp').querySelectorAll('.it').forEach(e=>e.onclick=()=>{const id=e.dataset.id;S.off.has(id)?S.off.delete(id):S.off.add(id);render()});
-  $('selSec').innerHTML=['Todos',...sectors()].map(s=>`<option ${s===S.sector?'selected':''}>${s}</option>`).join('');
+  $('lstEmp').querySelectorAll('.it').forEach(e=>e.onclick=()=>{if(one)return;const id=e.dataset.id;S.off.has(id)?S.off.delete(id):S.off.add(id);render()});
+  $('selSec').innerHTML=(sectors().length>1?['Todos',...sectors()]:sectors()).map(s=>`<option ${s===S.sector?'selected':''}>${s}</option>`).join('');
   if(!$('selInd1').options.length){const o=IND.map(i=>`<option value="${i.k}">${i.n}</option>`).join('');$('selInd1').innerHTML=o;$('selInd2').innerHTML=o}
   $('selInd1').value=S.ind1;$('selInd2').value=S.ind2;
   {const c0=focus(),y0=yrs(c0);$('sumBox').innerHTML=`<h4>Empresa en pantalla</h4><div class="nm">${c0.nombre}</div><div class="sc">${c0.sector}</div><div class="sc">Datos de ${y0[0]} a ${y0[y0.length-1]}</div>`}
